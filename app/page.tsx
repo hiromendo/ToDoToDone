@@ -3,7 +3,7 @@
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { Id } from "../convex/_generated/dataModel";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 
 type Status = "done" | "in_progress" | "not_done" | "blocked";
 type StatusFilter = Status | "all";
@@ -49,21 +49,13 @@ function formatDate(ts: number) {
 }
 
 export default function Home() {
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [newTodoTitle, setNewTodoTitle] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [showAddForm, setShowAddForm] = useState(false);
   const [editingId, setEditingId] = useState<Id<"todos"> | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
 
-  // Debounce search input
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(search), 300);
-    return () => clearTimeout(timer);
-  }, [search]);
-
-  const queryArgs: { status?: Status; search?: string } = {};
+  const queryArgs: { status?: Status } = {};
   if (statusFilter !== "all") queryArgs.status = statusFilter;
-  if (debouncedSearch.trim()) queryArgs.search = debouncedSearch.trim();
 
   const todos = useQuery(api.todos.list, queryArgs);
   const createTodo = useMutation(api.todos.create);
@@ -77,14 +69,34 @@ export default function Home() {
           ToDoToDone
         </h1>
 
-        {/* Search */}
-        <input
-          type="text"
-          placeholder="Search todos..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="mb-4 w-full rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm text-zinc-900 placeholder-zinc-400 outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-500 dark:focus:border-zinc-500"
-        />
+        {/* Add todo inline */}
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            if (!newTodoTitle.trim() || isCreating) return;
+            setIsCreating(true);
+            await createTodo({ title: newTodoTitle.trim() });
+            setNewTodoTitle("");
+            setIsCreating(false);
+          }}
+          className="mb-4 flex gap-2"
+        >
+          <input
+            type="text"
+            placeholder="Add a new todo..."
+            value={newTodoTitle}
+            onChange={(e) => setNewTodoTitle(e.target.value)}
+            disabled={isCreating}
+            className="flex-1 rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm text-zinc-900 placeholder-zinc-400 outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-500 dark:focus:border-zinc-500"
+          />
+          <button
+            type="submit"
+            disabled={isCreating || !newTodoTitle.trim()}
+            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+          >
+            {isCreating ? "Adding..." : "Add"}
+          </button>
+        </form>
 
         {/* Status filter tabs */}
         <div className="mb-6 flex gap-2">
@@ -102,28 +114,6 @@ export default function Home() {
             </button>
           ))}
         </div>
-
-        {/* Add todo toggle */}
-        <button
-          onClick={() => setShowAddForm(!showAddForm)}
-          className="mb-4 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
-        >
-          {showAddForm ? "Cancel" : "+ Add Todo"}
-        </button>
-
-        {/* Add todo form */}
-        {showAddForm && (
-          <AddTodoForm
-            onCreate={async (title, status, content) => {
-              await createTodo({
-                title,
-                status,
-                content: content || undefined,
-              });
-              setShowAddForm(false);
-            }}
-          />
-        )}
 
         {/* Todo list */}
         <div className="mt-4 flex flex-col gap-3">
@@ -154,72 +144,6 @@ export default function Home() {
         </div>
       </main>
     </div>
-  );
-}
-
-function AddTodoForm({
-  onCreate,
-}: {
-  onCreate: (title: string, status: Status, content: string) => Promise<void>;
-}) {
-  const [title, setTitle] = useState("");
-  const [status, setStatus] = useState<Status>("not_done");
-  const [content, setContent] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title.trim()) return;
-    setSubmitting(true);
-    await onCreate(title.trim(), status, content);
-    setSubmitting(false);
-  };
-
-  return (
-    <form
-      onSubmit={handleSubmit}
-      className="mb-4 flex flex-col gap-3 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
-    >
-      <input
-        ref={inputRef}
-        type="text"
-        placeholder="Title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        required
-        className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
-      />
-      <select
-        value={status}
-        onChange={(e) => setStatus(e.target.value as Status)}
-        className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
-      >
-        {STATUS_OPTIONS.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
-      <textarea
-        placeholder="Content (optional)"
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        rows={3}
-        className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
-      />
-      <button
-        type="submit"
-        disabled={submitting || !title.trim()}
-        className="self-start rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
-      >
-        {submitting ? "Creating..." : "Create"}
-      </button>
-    </form>
   );
 }
 
