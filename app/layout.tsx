@@ -10,7 +10,7 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "ToDoToDone",
+  title: "ToDo To Done",
   description: "A todo list app with real-time sync",
 };
 

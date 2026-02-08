@@ -64,7 +64,7 @@ export default function Home() {
     <div className="flex min-h-screen items-start justify-center bg-surface font-sans">
       <main className="w-full max-w-2xl px-4 py-12">
         <h1 className="theme-heading mb-8 text-3xl tracking-tight text-text-primary">
-          ToDoToDone
+          Todo To Done
         </h1>
 
         {/* Add todo inline */}
