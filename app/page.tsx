@@ -22,12 +22,10 @@ const FILTER_TABS: { value: StatusFilter; label: string }[] = [
 
 function statusBadge(status: Status) {
   const styles: Record<Status, string> = {
-    not_done: "bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300",
-    in_progress:
-      "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-    done: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
-    blocked:
-      "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
+    not_done: "bg-badge-1 text-text-primary",
+    in_progress: "bg-badge-2 text-text-primary",
+    done: "bg-badge-3 text-text-primary",
+    blocked: "bg-badge-4 text-text-primary",
   };
   const labels: Record<Status, string> = {
     not_done: "Not Done",
@@ -37,7 +35,7 @@ function statusBadge(status: Status) {
   };
   return (
     <span
-      className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${styles[status]}`}
+      className={`theme-badge inline-block px-2 py-0.5 text-xs font-medium ${styles[status]}`}
     >
       {labels[status]}
     </span>
@@ -63,9 +61,9 @@ export default function Home() {
   const removeTodo = useMutation(api.todos.remove);
 
   return (
-    <div className="flex min-h-screen items-start justify-center bg-zinc-50 font-sans dark:bg-zinc-950">
+    <div className="flex min-h-screen items-start justify-center bg-surface font-sans">
       <main className="w-full max-w-2xl px-4 py-12">
-        <h1 className="mb-8 text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <h1 className="theme-heading mb-8 text-3xl tracking-tight text-text-primary">
           ToDoToDone
         </h1>
 
@@ -87,12 +85,12 @@ export default function Home() {
             value={newTodoTitle}
             onChange={(e) => setNewTodoTitle(e.target.value)}
             disabled={isCreating}
-            className="flex-1 rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm text-zinc-900 placeholder-zinc-400 outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder-zinc-500 dark:focus:border-zinc-500"
+            className="theme-input flex-1 px-4 py-2 text-sm text-text-primary placeholder-text-tertiary outline-none disabled:opacity-50"
           />
           <button
             type="submit"
             disabled={isCreating || !newTodoTitle.trim()}
-            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+            className="theme-button-cta bg-text-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-dark disabled:opacity-50"
           >
             {isCreating ? "Adding..." : "Add"}
           </button>
@@ -104,10 +102,10 @@ export default function Home() {
             <button
               key={tab.value}
               onClick={() => setStatusFilter(tab.value)}
-              className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+              className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
                 statusFilter === tab.value
-                  ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                  : "bg-zinc-200 text-zinc-600 hover:bg-zinc-300 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
+                  ? "bg-text-primary text-white"
+                  : "bg-badge-1 text-text-secondary hover:bg-border"
               }`}
             >
               {tab.label}
@@ -118,9 +116,9 @@ export default function Home() {
         {/* Todo list */}
         <div className="mt-4 flex flex-col gap-3">
           {todos === undefined ? (
-            <p className="text-sm text-zinc-500">Loading...</p>
+            <p className="text-sm text-text-secondary">Loading...</p>
           ) : todos.length === 0 ? (
-            <p className="text-sm text-zinc-500">No todos found.</p>
+            <p className="text-sm text-text-secondary">No todos found.</p>
           ) : (
             todos.map((todo) => (
               <TodoItem
@@ -199,17 +197,17 @@ function TodoItem({
 
   if (isEditing) {
     return (
-      <div className="flex flex-col gap-2 rounded-lg border border-zinc-300 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
+      <div className="theme-card flex flex-col gap-2 p-4">
         <input
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+          className="theme-input px-3 py-2 text-sm text-text-primary outline-none"
         />
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value as Status)}
-          className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+          className="theme-input px-3 py-2 text-sm text-text-primary outline-none"
         >
           {STATUS_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -221,19 +219,19 @@ function TodoItem({
           value={content}
           onChange={(e) => setContent(e.target.value)}
           rows={3}
-          className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+          className="theme-input px-3 py-2 text-sm text-text-primary outline-none"
         />
         <div className="flex gap-2">
           <button
             onClick={handleSave}
             disabled={submitting || !title.trim()}
-            className="rounded-lg bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+            className="theme-button-cta bg-text-primary px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-accent-dark disabled:opacity-50"
           >
             {submitting ? "Saving..." : "Save"}
           </button>
           <button
             onClick={onCancelEdit}
-            className="rounded-lg bg-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-300 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+            className="rounded-full bg-badge-1 px-3 py-1.5 text-sm font-medium text-text-secondary transition-colors hover:bg-border"
           >
             Cancel
           </button>
@@ -243,33 +241,33 @@ function TodoItem({
   }
 
   return (
-    <div className="flex flex-col gap-2 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="theme-card flex flex-col gap-2 p-4">
       <div className="flex items-center gap-3">
         {statusBadge(todo.status)}
-        <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+        <span className="text-sm font-medium text-text-primary">
           {todo.title}
         </span>
       </div>
       {todo.content && (
-        <p className="whitespace-pre-wrap text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="whitespace-pre-wrap text-sm text-text-secondary">
           {todo.content}
         </p>
       )}
       <div className="flex items-center justify-between">
-        <span className="text-xs text-zinc-400 dark:text-zinc-500">
+        <span className="text-xs text-text-tertiary">
           Created {formatDate(todo.createdAt)} · Updated{" "}
           {formatDate(todo.updatedAt)}
         </span>
         <div className="flex gap-2">
           <button
             onClick={onEdit}
-            className="text-xs font-medium text-zinc-500 transition-colors hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
+            className="text-xs font-medium text-text-secondary transition-colors hover:text-text-primary"
           >
             Edit
           </button>
           <button
             onClick={onDelete}
-            className="text-xs font-medium text-red-500 transition-colors hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+            className="text-xs font-medium text-red-400 transition-colors hover:text-red-600"
           >
             Delete
           </button>
