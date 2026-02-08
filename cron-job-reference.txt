@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "jobs": [
+    {
+      "id": "todotodone-worker",
+      "name": "ToDoToDone Worker",
+      "enabled": true,
+      "schedule": {
+        "kind": "every",
+        "everyMs": 60000,
+        "anchorMs": 1770496942453
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Check for not_done todos via todotodone skill. If none, stop. Otherwise pick up to the first 3, set it to in_progress, classify it using task-interpreter skill, execute it, and set it to done with a summary. Update content with progress notes. Create subtasks as new not_done todos if needed. Include 'Skills used: [task-interpreter, ...]' in content. Process up to 3 tasks per run.",
+        "model": "anthropic/claude-opus-4-5",
+        "thinking": "low"
+      },
+      "delivery": {
+        "mode": "none"
+      }
+    }
+  ]
+}
